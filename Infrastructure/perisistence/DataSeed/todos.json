@@ -1,0 +1,32 @@
+[
+  {
+    "Id": "00000000-0000-0000-0000-000000000001",
+    "Title": "Buy groceries",
+    "Description": "Milk, eggs, bread",
+    "Status": "Pending",
+    "Priority": "Medium",
+    "DueDate": "2026-08-01T00:00:00",
+    "CreatedDate": "2026-07-20T00:00:00",
+    "LastModifiedDate": "2026-07-20T00:00:00"
+  },
+  {
+    "Id": "00000000-0000-0000-0000-000000000002",
+    "Title": "Finish .NET project",
+    "Description": "Complete the Todo API assignment",
+    "Status": "InProgress",
+    "Priority": "High",
+    "DueDate": "2026-08-05T00:00:00",
+    "CreatedDate": "2026-07-18T00:00:00",
+    "LastModifiedDate": "2026-07-22T00:00:00"
+  },
+  {
+    "Id": "00000000-0000-0000-0000-000000000003",
+    "Title": "Read a book",
+    "Description": null,
+    "Status": "Completed",
+    "Priority": "Low",
+    "DueDate": null,
+    "CreatedDate": "2026-07-10T00:00:00",
+    "LastModifiedDate": "2026-07-15T00:00:00"
+  }
+]
