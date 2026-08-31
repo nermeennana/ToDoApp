@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<title>Todo</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Segoe UI", Tahoma, Arial, sans-serif;
+    background: #eef1f5;
+    margin: 0;
+    padding: 40px 20px;
+  }
+
+  .card {
+    max-width: 560px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    padding: 28px;
+  }
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  .header h1 {
+    font-size: 28px;
+    margin: 0;
+    color: #1a1a1a;
+  }
+  .header button {
+    background: #1a1a1a;
+    color: #fff;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .header button:hover { background: #333; }
+
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+  .filters select {
+    padding: 6px 8px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    font-size: 13px;
+    background: #fafafa;
+  }
+
+  .section-label {
+    font-weight: bold;
+    font-size: 20px;
+    color: #333;
+    margin: 22px 0 12px;
+  }
+
+  .todo-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border: 1px solid #eee;
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+  }
+
+  .circle {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 3px solid;
+    flex-shrink: 0;
+    cursor: pointer;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .circle.priority-High { border-color: #e0453b; }
+  .circle.priority-Medium { border-color: #33b8e0; }
+  .circle.priority-Low { border-color: #5b4fe0; }
+
+  .circle.done {
+    background: #b9b3f7;
+    border-color: #b9b3f7;
+    color: #fff;
+    font-size: 13px;
+  }
+
+  .todo-body { flex: 1; min-width: 0; }
+  .todo-title {
+    font-weight: bold;
+    font-size: 17px;
+    color: #1a1a1a;
+    margin-bottom: 2px;
+  }
+  .todo-title.done {
+    text-decoration: line-through;
+    color: #c3c3c3;
+  }
+  .todo-sub {
+    font-size: 14px;
+    color: #999;
+  }
+  .todo-sub.done { color: #d5d5d5; }
+
+  .tags { display: flex; gap: 6px; flex-shrink: 0; }
+  .tag {
+    background: #f2f2f4;
+    color: #555;
+    font-weight: 600;
+    font-size: 13px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    white-space: nowrap;
+  }
+  .tag.done { color: #d5d5d5; }
+
+  .delete-btn {
+    background: none;
+    border: none;
+    color: #ccc;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 4px;
+  }
+  .delete-btn:hover { color: #e0453b; }
+
+  #errorBox {
+    display: none;
+    background: #fdecea;
+    color: #a32b23;
+    padding: 10px 14px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    font-size: 14px;
+  }
+
+  .empty { text-align: center; color: #aaa; padding: 20px; font-size: 14px; }
+
+  .add-panel {
+    display: none;
+    border: 1px solid #eee;
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 18px;
+    background: #fafafa;
+  }
+  .add-panel.open { display: block; }
+  .add-panel input, .add-panel select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    font-size: 14px;
+  }
+  .add-panel .row { display: flex; gap: 8px; }
+  .add-panel .row > * { flex: 1; }
+  .add-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 6px; }
+  .add-actions button {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .btn-save { background: #1a1a1a; color: #fff; }
+  .btn-cancel { background: #eee; color: #333; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="header">
+    <h1>Todo</h1>
+    <button onclick="toggleAddPanel()">Create Reminder</button>
+  </div>
+
+  <div id="errorBox"></div>
+
+  <div class="add-panel" id="addPanel">
+    <input type="text" id="newTitle" placeholder="Title">
+    <input type="text" id="newDescription" placeholder="Description (optional)">
+    <div class="row">
+      <select id="newPriority">
+        <option value="">Priority</option>
+        <option value="Low">Low</option>
+        <option value="Medium">Medium</option>
+        <option value="High">High</option>
+      </select>
+      <input type="date" id="newDueDate">
+    </div>
+    <div class="add-actions">
+      <button class="btn-cancel" onclick="toggleAddPanel()">Cancel</button>
+      <button class="btn-save" onclick="addTodo()">Save</button>
+    </div>
+  </div>
+
+  <div class="filters">
+    <select id="filterStatus">
+      <option value="">All statuses</option>
+      <option value="Pending">Pending</option>
+      <option value="InProgress">InProgress</option>
+    </select>
+    <select id="filterPriority">
+      <option value="">All priorities</option>
+      <option value="Low">Low</option>
+      <option value="Medium">Medium</option>
+      <option value="High">High</option>
+    </select>
+    <select id="sortBy">
+      <option value="">No sorting</option>
+      <option value="Title">Title</option>
+      <option value="Priority">Priority</option>
+      <option value="CreatedDate">CreatedDate</option>
+    </select>
+    <select id="sortDirection">
+      <option value="Asc">Ascending</option>
+      <option value="Desc">Descending</option>
+    </select>
+    <button onclick="loadTodos()">Apply</button>
+  </div>
+
+  <div id="activeList"></div>
+
+  <div class="section-label">Completed</div>
+  <div id="completedList"></div>
+</div>
+
+<script>
+  // Change this URL if your API runs on a different port
+  const API_BASE = "http://localhost:5093/api/ToDo";
+
+  function showError(msg) {
+    const box = document.getElementById("errorBox");
+    box.textContent = msg;
+    box.style.display = "block";
+    setTimeout(() => box.style.display = "none", 6000);
+  }
+
+  function toggleAddPanel() {
+    document.getElementById("addPanel").classList.toggle("open");
+  }
+
+  function buildQuery() {
+    const params = new URLSearchParams();
+    const status = document.getElementById("filterStatus").value;
+    const priority = document.getElementById("filterPriority").value;
+    const sortBy = document.getElementById("sortBy").value;
+    const sortDirection = document.getElementById("sortDirection").value;
+
+    if (status) params.append("status", status);
+    if (priority) params.append("priority", priority);
+    if (sortBy) params.append("sortBy", sortBy);
+    if (sortBy) params.append("sortDirection", sortDirection);
+
+    return params.toString();
+  }
+
+  function formatDueLabel(dueDate) {
+    if (!dueDate) return "";
+    const today = new Date();
+    const d = new Date(dueDate);
+    const diffDays = Math.round((new Date(d.toDateString()) - new Date(today.toDateString())) / 86400000);
+    if (diffDays === 0) return "Today";
+    if (diffDays === 1) return "Tomorrow";
+    if (diffDays === -1) return "Yesterday";
+    return d.toLocaleDateString();
+  }
+
+  async function loadTodos() {
+    try {
+      const query = buildQuery();
+      const res = await fetch(`${API_BASE}/filter${query ? "?" + query : ""}`);
+      if (!res.ok) throw new Error("Failed to load data, code: " + res.status);
+      const todos = await res.json();
+      renderTodos(todos);
+    } catch (err) {
+      showError("Error connecting to the API: " + err.message + " — make sure the server is running and CORS is enabled.");
+    }
+  }
+
+  function renderTodos(todos) {
+    const active = todos.filter(t => t.status !== "Completed");
+    const completed = todos.filter(t => t.status === "Completed");
+
+    const activeList = document.getElementById("activeList");
+    const completedList = document.getElementById("completedList");
+
+    activeList.innerHTML = active.length
+      ? active.map(t => renderItem(t, false)).join("")
+      : `<div class="empty">No tasks</div>`;
+
+    completedList.innerHTML = completed.length
+      ? completed.map(t => renderItem(t, true)).join("")
+      : `<div class="empty">No completed tasks</div>`;
+  }
+
+  function renderItem(t, isDone) {
+    const dueLabel = formatDueLabel(t.dueDate);
+    return `
+      <div class="todo-item">
+        <div class="circle priority-${t.priority} ${isDone ? "done" : ""}"
+             onclick="${isDone ? "" : `markComplete('${t.id}')`}">
+          ${isDone ? "✓" : ""}
+        </div>
+        <div class="todo-body">
+          <div class="todo-title ${isDone ? "done" : ""}">${escapeHtml(t.title)}</div>
+          <div class="todo-sub ${isDone ? "done" : ""}">${dueLabel}</div>
+        </div>
+        <div class="tags">
+          <span class="tag ${isDone ? "done" : ""}">${t.priority}</span>
+        </div>
+        ${isDone ? `<button class="delete-btn" title="Move back to active" onclick="reopenTodo('${t.id}')">↺</button>` : ""}
+        <button class="delete-btn" onclick="deleteTodo('${t.id}')">✕</button>
+      </div>
+    `;
+  }
+
+  function escapeHtml(str) {
+    if (!str) return "";
+    return str.replace(/[&<>"']/g, c => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    }[c]));
+  }
+
+  async function addTodo() {
+    const title = document.getElementById("newTitle").value.trim();
+    const description = document.getElementById("newDescription").value.trim();
+    const priority = document.getElementById("newPriority").value;
+    const dueDate = document.getElementById("newDueDate").value;
+
+    if (!title) {
+      showError("Title is required");
+      return;
+    }
+
+    const body = {
+      title,
+      description: description || null,
+      priority: priority || null,
+      dueDate: dueDate || null
+    };
+
+    try {
+      const res = await fetch(API_BASE, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => null);
+        throw new Error(errData ? JSON.stringify(errData) : "Failed to add, code: " + res.status);
+      }
+      document.getElementById("newTitle").value = "";
+      document.getElementById("newDescription").value = "";
+      document.getElementById("newPriority").value = "";
+      document.getElementById("newDueDate").value = "";
+      toggleAddPanel();
+      loadTodos();
+    } catch (err) {
+      showError("Error adding task: " + err.message);
+    }
+  }
+
+  async function markComplete(id) {
+    try {
+      const res = await fetch(`${API_BASE}/${id}/complete`, { method: "PATCH" });
+      if (!res.ok) throw new Error("Failed to update, code: " + res.status);
+      loadTodos();
+    } catch (err) {
+      showError("Error updating status: " + err.message);
+    }
+  }
+
+  async function reopenTodo(id) {
+    try {
+      const res = await fetch(`${API_BASE}/${id}/reopen`, { method: "PATCH" });
+      if (!res.ok) throw new Error("Failed to reopen, code: " + res.status);
+      loadTodos();
+    } catch (err) {
+      showError("Error reopening task: " + err.message);
+    }
+  }
+
+  async function deleteTodo(id) {
+    if (!confirm("Are you sure you want to delete this task?")) return;
+    try {
+      const res = await fetch(`${API_BASE}/${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed to delete, code: " + res.status);
+      loadTodos();
+    } catch (err) {
+      showError("Error deleting task: " + err.message);
+    }
+  }
+
+  loadTodos();
+</script>
+</body>
+</html>

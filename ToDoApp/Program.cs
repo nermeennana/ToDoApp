@@ -1,8 +1,14 @@
 using DomainLayer.Contracts___Repo_Interface;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using perisistence;
 using perisistence.Data;
 using perisistence.Repositories;
+using Shared.ErrorModels;
+using Swashbuckle.AspNetCore.SwaggerUI;
+using System.Text.Json.Serialization;
+using ToDoApp.Extentinos;
+using ToDoApp.Factories;
 
 namespace ToDoApp
 {
@@ -13,26 +19,24 @@ namespace ToDoApp
             var builder = WebApplication.CreateBuilder(args);
 
             #region Add services to the container
-            builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-            builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
-            builder.Services.AddDbContext<ToDoDbContext>(options =>
+
+            //builder.Services.AddControllers();
+            builder.Services.AddSwaggerServices();
+            builder.Services.AddInfrastructureServices(builder.Configuration);
+            builder.Services.AddWebApplicationServices();
+            // Connecting the frontend part with the backend part of the application using CORS policy
+            builder.Services.AddCors(options =>
             {
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+                options.AddPolicy("AllowAll", policy =>
+                    policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
             });
-            builder.Services.AddScoped<IDataSeeding, DataSeeding>();
-            builder.Services.AddScoped<IToDoRepository, ToDoRepository>();
+
             #endregion
 
             var app = builder.Build();
 
             #region Data Seeding
-            
-            using var scope = app.Services.CreateScope();
-            var seedObj = scope.ServiceProvider.GetRequiredService<IDataSeeding>();
-            await seedObj.DataSeedAsync();
-
+            await app.SeedDataBaseAsync();
             #endregion
 
             #region Configure the HTTP request pipeline
@@ -40,14 +44,24 @@ namespace ToDoApp
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
-                app.UseSwaggerUI();
+                app.UseSwaggerUI(options =>
+                {
+                    options.ConfigObject = new Swashbuckle.AspNetCore.SwaggerUI.ConfigObject()
+                    {
+                        DisplayRequestDuration = true,
+                    };
+                    options.DocumentTitle = "ToDo API Project";
+                    options.DocExpansion(DocExpansion.None);
+                    options.EnableFilter();
+                });
             }
 
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
 
-
+            // Enable CORS policy
+            app.UseCors("AllowAll");
             app.MapControllers(); 
             #endregion
 

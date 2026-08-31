@@ -1,4 +1,5 @@
 ﻿using DomainLayer.Models;
+using DomainLayer.Models.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,10 +11,13 @@ namespace DomainLayer.Contracts___Repo_Interface
     public interface IToDoRepository
     {
         Task <IEnumerable<ToDo>> GetAllToDosAsync();
-        Task<ToDo?> GetToDoByIdAsync(Guid id);
+        Task<IEnumerable<ToDo>> GetAllToDosAsync(ToDoStatus? status, ToDoPriority? priority, DateTime? fromDate,DateTime? toDate, ToDoSortBy? sortBy, ToDoSortDirection? sortDirection);
+        Task<ToDo> GetToDoByIdAsync(Guid id);
         Task AddToDoAsync(ToDo todo);
-        void UpdateToDo(ToDo todo);
-        void DeleteToDo(ToDo todo);
+        Task UpdateToDoAsync(ToDo todo);
+        Task DeleteToDoAsync(ToDo todo);
+        Task MarkAsCompletedToDoAsync(Guid id);
+        Task ReopenToDoAsync(Guid id);
         Task SaveChangesAsync();
     }
 }
