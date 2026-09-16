@@ -30,7 +30,16 @@ namespace perisistence
 
                 if (!(await _toDoDbContext.ToDos.AnyAsync()))
                 {
-                    var todos = File.OpenRead(@"..\Infrastructure\perisistence\DataSeed\todos.json");
+                    // var todos = File.OpenRead(@"..\Infrastructure\perisistence\DataSeed\todos.json");
+                    var seedFilePath = Path.Combine(
+                        "..",
+                        "Infrastructure",
+                        "perisistence",
+                        "DataSeed",
+                        "todos.json");
+
+                    using var todos = File.OpenRead(seedFilePath);
+                    
                     var options = new JsonSerializerOptions
                     {
                         Converters = { new JsonStringEnumConverter() }

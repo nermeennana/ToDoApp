@@ -3,6 +3,8 @@ using DomainLayer.Exceptions;
 using DomainLayer.Models;
 using DomainLayer.Models.Enums;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
+using Presentation.Hubs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,10 +18,12 @@ namespace Presentation.Controller
     public class ToDOController : ControllerBase
     {
         public readonly IToDoRepository _toDoRepository;
+        private readonly IHubContext<NotificationHub> _hubContext;
 
-        public ToDOController(IToDoRepository toDoRepository)
+        public ToDOController(IToDoRepository toDoRepository, IHubContext<NotificationHub> hubContext)
         {
             _toDoRepository = toDoRepository;
+            _hubContext = hubContext;
         }
 
         [HttpGet]
@@ -97,9 +101,13 @@ namespace Presentation.Controller
         [HttpPatch("{id:guid}/complete")]
         public async Task<ActionResult> MarkAsCompletedToDoController(Guid id)
         {
+            var todo = await _toDoRepository.GetToDoByIdAsync(id);
             await _toDoRepository.MarkAsCompletedToDoAsync(id);
             await _toDoRepository.SaveChangesAsync();
-            return Ok(new { message = "ToDo marked as complete successfully" });
+
+            await _hubContext.Clients.All.SendAsync("ReceiveNotification", $"{todo.Title} has been completed.");
+
+            return Ok(new { message = "ToDo marked as successfully completed" });
         }
         [HttpPatch("{id:guid}/reopen")]
         public async Task<ActionResult> ReopenToDoController(Guid id)

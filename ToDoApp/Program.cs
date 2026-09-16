@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using perisistence;
 using perisistence.Data;
 using perisistence.Repositories;
+using Presentation.Hubs;
 using Shared.ErrorModels;
 using Swashbuckle.AspNetCore.SwaggerUI;
 using System.Text.Json.Serialization;
@@ -24,16 +25,16 @@ namespace ToDoApp
             builder.Services.AddSwaggerServices();
             builder.Services.AddInfrastructureServices(builder.Configuration);
             builder.Services.AddWebApplicationServices();
-            // Connecting the frontend part with the backend part of the application using CORS policy
-            builder.Services.AddCors(options =>
-            {
-                options.AddPolicy("AllowAll", policy =>
-                    policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
-            });
+            builder.Services.AddSignalR();
 
             #endregion
 
             var app = builder.Build();
+
+            // Enable CORS policy
+            app.UseCors("AllowAll");
+
+            app.MapHub<NotificationHub>("/notificationHub");
 
             #region Data Seeding
             await app.SeedDataBaseAsync();
@@ -57,11 +58,7 @@ namespace ToDoApp
             }
 
             app.UseHttpsRedirection();
-
             app.UseAuthorization();
-
-            // Enable CORS policy
-            app.UseCors("AllowAll");
             app.MapControllers(); 
             #endregion
 
