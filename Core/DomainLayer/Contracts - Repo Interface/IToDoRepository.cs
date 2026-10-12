@@ -10,6 +10,7 @@ namespace DomainLayer.Contracts___Repo_Interface
 {
     public interface IToDoRepository
     {
+        Task<IEnumerable<AuditLog>> GetAuditLogsAsync();
         Task <IEnumerable<ToDo>> GetAllToDosAsync();
         Task<IEnumerable<ToDo>> GetAllToDosAsync(ToDoStatus? status, ToDoPriority? priority, DateTime? fromDate,DateTime? toDate, ToDoSortBy? sortBy, ToDoSortDirection? sortDirection);
         Task<ToDo> GetToDoByIdAsync(Guid id);

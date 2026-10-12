@@ -14,5 +14,6 @@ namespace perisistence.Data
         }
 
         public DbSet<ToDo> ToDos { get; set; }
+        public DbSet<AuditLog> AuditLogs { get; set; }
     }
 }

@@ -10,6 +10,7 @@ namespace DomainLayer.Models.Enums
     {
         Title,
         Priority,
-        CreatedDate
+        CreatedDate,
+        DueDate
     }
 }

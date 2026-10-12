@@ -10,6 +10,8 @@ using Swashbuckle.AspNetCore.SwaggerUI;
 using System.Text.Json.Serialization;
 using ToDoApp.Extentinos;
 using ToDoApp.Factories;
+using System.Threading.RateLimiting;
+using ToDoApp.Background_Services;
 
 namespace ToDoApp
 {
@@ -26,13 +28,32 @@ namespace ToDoApp
             builder.Services.AddInfrastructureServices(builder.Configuration);
             builder.Services.AddWebApplicationServices();
             builder.Services.AddSignalR();
-
+            builder.Services.AddRateLimiter(options =>
+            {
+                options.AddPolicy("ToDoPolicy", context =>
+                {
+                    var ipAddress = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+                    return RateLimitPartition.GetFixedWindowLimiter(ipAddress, _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 5,
+                        Window = TimeSpan.FromSeconds(10),
+                        QueueLimit = 0,
+                        QueueProcessingOrder = QueueProcessingOrder.OldestFirst
+                    });
+                });
+                options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+            });
+            builder.Services.AddMemoryCache();
+            builder.Services.AddHostedService<BackgroundReminderService>();
+            
             #endregion
 
             var app = builder.Build();
 
             // Enable CORS policy
             app.UseCors("AllowAll");
+
+            app.UseRateLimiter();
 
             app.MapHub<NotificationHub>("/notificationHub");
 

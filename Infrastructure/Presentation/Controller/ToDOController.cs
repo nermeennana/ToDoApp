@@ -3,6 +3,7 @@ using DomainLayer.Exceptions;
 using DomainLayer.Models;
 using DomainLayer.Models.Enums;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.SignalR;
 using Presentation.Hubs;
 using System;
@@ -15,6 +16,7 @@ namespace Presentation.Controller
 {
     [ApiController]
     [Route("api/[controller]")]
+    [EnableRateLimiting("ToDoPolicy")]
     public class ToDOController : ControllerBase
     {
         public readonly IToDoRepository _toDoRepository;
@@ -25,7 +27,6 @@ namespace Presentation.Controller
             _toDoRepository = toDoRepository;
             _hubContext = hubContext;
         }
-
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ToDo>>> GetAllToDosController()
         {
@@ -33,6 +34,7 @@ namespace Presentation.Controller
             return Ok(todos);
         }
         [HttpGet("filter")]
+        [DisableRateLimiting]
         public async Task<ActionResult<IEnumerable<ToDo>>> GetAllToDosByStatusController([FromQuery] ToDoStatus? status, [FromQuery] ToDoPriority? priority, [FromQuery] DateTime? fromDate, [FromQuery] DateTime? toDate, [FromQuery] ToDoSortBy? sortBy, [FromQuery] ToDoSortDirection? sortDirection)
         {
             var todos = await _toDoRepository.GetAllToDosAsync(status, priority, fromDate, toDate, sortBy, sortDirection);
@@ -45,13 +47,19 @@ namespace Presentation.Controller
             var todo = await _toDoRepository.GetToDoByIdAsync(id);
             return Ok(todo);
         }
-
+        [HttpGet("audit-logs")]
+        public async Task<ActionResult<IEnumerable<AuditLog>>> GetAuditLogsController()
+        {
+            var auditLogs = await _toDoRepository.GetAuditLogsAsync();
+            return Ok(auditLogs);
+        }
         [HttpPost]
         public async Task<ActionResult<ToDo>> AddToDoController([FromBody] ToDo todo)
         {
             if (todo.DueDate.HasValue && todo.DueDate.Value.Date < DateTime.UtcNow.Date)
             {
                 ModelState.AddModelError("DueDate", "Due date must be today or in the future");
+                return ValidationProblem(ModelState);
             }
             todo.Id = Guid.NewGuid();
             todo.CreatedDate = DateTime.UtcNow;
