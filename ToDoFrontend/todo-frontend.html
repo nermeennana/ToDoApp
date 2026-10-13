@@ -79,6 +79,13 @@
     margin: 22px 0 12px;
   }
 
+  .section-label .count {
+    font-size: 14px;
+    font-weight: normal;
+    color: #999;
+    margin-left: 6px;
+  }
+
   .todo-item {
     display: flex;
     align-items: center;
@@ -294,10 +301,12 @@
 
   </div>
 
+  <div class="section-label">Pending <span class="count" id="pendingCount"></span></div>
   <div id="activeList"></div>
 
-  <div class="section-label">Completed</div>
+  <div class="section-label">Completed <span class="count" id="completedCount"></span></div>
   <div id="completedList"></div>
+
 </div>
 
 <script>
@@ -371,6 +380,9 @@
     completedList.innerHTML = completed.length
       ? completed.map(t => renderItem(t, true)).join("")
       : `<div class="empty">No completed tasks</div>`;
+
+    document.getElementById("pendingCount").textContent = `${active.length} pending`;
+    document.getElementById("completedCount").textContent = `${completed.length} completed`;
   }
 
   function renderItem(t, isDone) {
