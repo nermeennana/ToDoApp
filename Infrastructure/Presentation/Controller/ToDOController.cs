@@ -95,7 +95,7 @@ namespace Presentation.Controller
             await _toDoRepository.UpdateToDoAsync(existingTodo);
             await _toDoRepository.SaveChangesAsync();
 
-            return NoContent();
+            return Ok(new { message = "ToDo updated successfully" });
         }
 
         [HttpDelete("{id:guid}")]
@@ -105,7 +105,7 @@ namespace Presentation.Controller
             await _toDoRepository.DeleteToDoAsync(todo);
             await _toDoRepository.SaveChangesAsync();
 
-            return NoContent();
+            return Ok(new { message = "ToDo deleted successfully" });
         }
         [HttpPatch("{id:guid}/complete")]
         public async Task<ActionResult> MarkAsCompletedToDoController(Guid id)
