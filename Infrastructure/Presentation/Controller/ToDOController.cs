@@ -77,12 +77,13 @@ namespace Presentation.Controller
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> UpdateToDoController(Guid id, [FromBody] ToDo todo)
         {
-            if (todo.DueDate.HasValue && todo.DueDate.Value.Date < DateTime.UtcNow.Date)
+            var existingTodo = await _toDoRepository.GetToDoByIdAsync(id);
+
+            if (todo.DueDate.HasValue && todo.DueDate.Value.Date < DateTime.UtcNow.Date && todo.DueDate != existingTodo.DueDate)
             {
                 ModelState.AddModelError("DueDate", "Due date must be today or in the future");
                 return ValidationProblem(ModelState);
             }
-            var existingTodo = await _toDoRepository.GetToDoByIdAsync(id);
 
             existingTodo.Title = todo.Title;
             existingTodo.Description = todo.Description;
