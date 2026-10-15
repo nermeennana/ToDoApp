@@ -312,6 +312,8 @@
 <script>
   // Change this URL if your API runs on a different port
   const API_BASE = "http://localhost:5093/api/ToDo";
+  let editingId = null;
+  let currentTodos = [];
 
   function showError(msg) {
     const box = document.getElementById("errorBox");
@@ -366,6 +368,7 @@
       const res = await fetch(`${API_BASE}/filter${query ? "?" + query : ""}`);
       if (!res.ok) throw new Error("Failed to load data, code: " + res.status);
       const todos = await res.json();
+      currentTodos = todos;
       renderTodos(todos);
     } catch (err) {
       showError("Error connecting to the API: " + err.message + " — make sure the server is running and CORS is enabled.");
@@ -400,7 +403,12 @@
           ${isDone ? "✓" : ""}
         </div>
         <div class="todo-body">
-          <div class="todo-title ${isDone ? "done" : ""}">${escapeHtml(t.title)}</div>
+          ${t.id === editingId
+            ? `<input type="text" id="editTitle" value="${escapeHtml(t.title)}">
+               <button onclick="saveEdit('${t.id}')">Save</button>
+               <button onclick="cancelEdit()">Cancel</button>`
+            : `<div class="todo-title ${isDone ? "done" : ""}">${escapeHtml(t.title)}</div>`}
+
           <div class="todo-sub ${isDone ? "done" : ""}">${dueLabel? `Due ${dueLabel}` : ""}</div>
           <div class="todo-sub ${isDone ? "done" : ""}">${formatCreatedLabel(t.createdDate)}</div>
         </div>
@@ -409,6 +417,8 @@
         </div>
         ${isDone ? `<button class="delete-btn" title="Move back to active" onclick="reopenTodo('${t.id}')">↺</button>` : ""}
         <button class="delete-btn" onclick="deleteTodo('${t.id}')">✕</button>
+        ${isDone ? "" : `<button class="delete-btn" onclick="startEdit('${t.id}')">✎</button>`}
+
       </div>
     `;
   }
@@ -498,6 +508,51 @@
       loadTodos();
     } catch (err) {
       showError("Error deleting task: " + err.message);
+    }
+  }
+
+  function startEdit(id) {
+    editingId = id;
+    renderTodos(currentTodos);
+  }
+
+  function cancelEdit(id) {
+    editingId = null;
+    renderTodos(currentTodos);
+  }
+
+  async function saveEdit(id) {
+    const todo = currentTodos.find(t => t.id === id);
+    const newTitle = document.getElementById("editTitle").value.trim();
+
+    if (!newTitle) {
+      showError("Title cannot be empty");
+      return;
+    }
+
+    const body = {
+      title: newTitle,
+      description: todo.description,
+      status: todo.status,
+      priority: todo.priority,
+      dueDate: todo.dueDate
+    };
+
+    try {
+      const res = await fetch(`${API_BASE}/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+      if (isTooManyRequests(res)) return;
+      if (!res.ok) {
+        const errData = await res.json().catch(() => null);
+        throw new Error(errData ? JSON.stringify(errData) : "Failed to update, code: " + res.status);
+      }
+      editingId = null;
+      loadTodos();
+    } catch (err) {
+      showError("Error updating task: " + err.message);
     }
   }
 
