@@ -12,6 +12,7 @@ using ToDoApp.Extentinos;
 using ToDoApp.Factories;
 using System.Threading.RateLimiting;
 using ToDoApp.Background_Services;
+using ToDoApp.CustomMiddlewares;
 
 namespace ToDoApp
 {
@@ -49,6 +50,8 @@ namespace ToDoApp
             #endregion
 
             var app = builder.Build();
+
+            app.UseMiddleware<CustomExceptionHandlerMiddleWare>();
 
             // Enable CORS policy
             app.UseCors("AllowAll");
