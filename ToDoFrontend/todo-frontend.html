@@ -199,6 +199,24 @@
   }
   .btn-save { background: #1a1a1a; color: #fff; }
   .btn-cancel { background: #eee; color: #333; }
+  .edit-form input, .edit-form select {
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+  .edit-row { display: flex; gap: 8px; }
+  .edit-row > * { flex: 1; }
+  .edit-actions { display: flex; gap: 8px; justify-content: flex-end; }
+  .edit-actions button {
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+  }
 
   /* ===== SignalR toast notification ===== */
   #toast {
@@ -394,6 +412,27 @@
     document.getElementById("completedCount").textContent = `${completed.length} completed`;
   }
 
+  function renderEditForm(t) {
+    const priorities = ["Low", "Medium", "High"];
+    const dueValue = t.dueDate ? t.dueDate.slice(0, 10) : "";
+
+    return `
+      <div class="edit-form">
+        <input type="text" id="editTitle" value="${escapeHtml(t.title)}">
+        <div class="edit-row">
+          <select id="editPriority">
+            ${priorities.map(p => `<option value="${p}" ${t.priority === p ? "selected" : ""}>${p}</option>`).join("")}
+          </select>
+          <input type="date" id="editDueDate" value="${dueValue}">
+        </div>
+        <div class="edit-actions">
+          <button class="btn-cancel" onclick="cancelEdit()">Cancel</button>
+          <button class="btn-save" onclick="saveEdit('${t.id}')">Save</button>
+        </div>
+      </div>
+    `;
+  }
+
   function renderItem(t, isDone) {
     const dueLabel = formatDueLabel(t.dueDate);
     return `
@@ -404,13 +443,10 @@
         </div>
         <div class="todo-body">
           ${t.id === editingId
-            ? `<input type="text" id="editTitle" value="${escapeHtml(t.title)}">
-               <button onclick="saveEdit('${t.id}')">Save</button>
-               <button onclick="cancelEdit()">Cancel</button>`
-            : `<div class="todo-title ${isDone ? "done" : ""}">${escapeHtml(t.title)}</div>`}
-
-          <div class="todo-sub ${isDone ? "done" : ""}">${dueLabel? `Due ${dueLabel}` : ""}</div>
-          <div class="todo-sub ${isDone ? "done" : ""}">${formatCreatedLabel(t.createdDate)}</div>
+            ? renderEditForm(t)
+            : `<div class="todo-title ${isDone ? "done" : ""}">${escapeHtml(t.title)}</div>
+               <div class="todo-sub ${isDone ? "done" : ""}">${dueLabel ? `Due ${dueLabel}` : ""}</div>
+               <div class="todo-sub ${isDone ? "done" : ""}">${formatCreatedLabel(t.createdDate)}</div>`}
         </div>
         <div class="tags">
           <span class="tag ${isDone ? "done" : ""}">${t.priority}</span>
@@ -530,12 +566,14 @@
       return;
     }
 
+    const newDueDate = document.getElementById("editDueDate").value;
+
     const body = {
       title: newTitle,
       description: todo.description,
       status: todo.status,
-      priority: todo.priority,
-      dueDate: todo.dueDate
+      priority: document.getElementById("editPriority").value,
+      dueDate: newDueDate || null
     };
 
     try {
