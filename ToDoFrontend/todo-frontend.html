@@ -280,6 +280,7 @@
         <option value="">All statuses</option>
         <option value="Pending">Pending</option>
         <option value="InProgress">InProgress</option>
+        <option value="Completed">Completed</option>
       </select>
     
       <select id="filterPriority">
@@ -402,11 +403,11 @@
 
     activeList.innerHTML = active.length
       ? active.map(t => renderItem(t, false)).join("")
-      : `<div class="empty">No tasks</div>`;
+      : `<div class="empty">You're all caught up! Add a new task to get started.</div>`;
 
     completedList.innerHTML = completed.length
       ? completed.map(t => renderItem(t, true)).join("")
-      : `<div class="empty">No completed tasks</div>`;
+      : `<div class="empty">No completed tasks yet.</div>`;
 
     document.getElementById("pendingCount").textContent = `${active.length} pending`;
     document.getElementById("completedCount").textContent = `${completed.length} completed`;
@@ -519,6 +520,7 @@
       const res = await fetch(`${API_BASE}/${id}/complete`, { method: "PATCH" });
       if (isTooManyRequests(res)) return;
       if (!res.ok) throw new Error("Failed to update, code: " + res.status);
+      loadTodos();
     } catch (err) {
       showError("Error updating status: " + err.message);
     }
