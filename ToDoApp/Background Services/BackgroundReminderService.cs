@@ -1,5 +1,5 @@
 using System;
-using DomainLayer.Models.Enums;
+using Shared.Enums;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using perisistence.Data;

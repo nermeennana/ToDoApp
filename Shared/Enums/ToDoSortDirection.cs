@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DomainLayer.Models.Enums
+namespace Shared.Enums
 {
     public enum ToDoSortDirection
     {

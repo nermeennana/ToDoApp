@@ -1,7 +1,7 @@
 ﻿using DomainLayer.Contracts___Repo_Interface;
 using DomainLayer.Exceptions;
 using DomainLayer.Models;
-using DomainLayer.Models.Enums;
+using Shared.Enums;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.SignalR;

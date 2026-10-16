@@ -4,13 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DomainLayer.Models.Enums
+namespace Shared.Enums
 {
-    public enum ToDoSortBy
+    public enum ToDoStatus
     {
-        Title,
-        Priority,
-        CreatedDate,
-        DueDate
+        Pending,
+        InProgress,
+        Completed
     }
 }
