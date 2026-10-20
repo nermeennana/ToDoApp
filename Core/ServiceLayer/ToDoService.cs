@@ -74,6 +74,7 @@ namespace ServiceLayer
             return new AuditLogDto
             {
                 ToDoId = log.ToDoId,
+                ToDoTitle = log.ToDoTitle,
                 Action = log.Action,
                 ModifiedAt = log.ModifiedAt,
                 UserName = log.UserName
