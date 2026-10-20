@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using ServiceAbstractionLayer;
+using ServiceLayer;
 using System.Text.Json.Serialization;
 using ToDoApp.Factories;
 
@@ -46,6 +48,9 @@ namespace ToDoApp.Extentinos
                           .AllowCredentials();
                 });
             });
+            
+            services.AddScoped<IToDoService, ToDoService>();
+
             return services;
         }
     }
