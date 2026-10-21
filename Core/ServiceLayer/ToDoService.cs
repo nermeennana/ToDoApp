@@ -36,23 +36,58 @@ namespace ServiceLayer
         }
         public async Task<ToDoDto> CreateToDoAsync(CreateToDoDto createToDoDto)
         {
-            throw new NotImplementedException();
+            var todo = new ToDo
+            {
+                Id = Guid.NewGuid(),
+                Title = createToDoDto.Title,
+                Description = createToDoDto.Description,
+                Status = ToDoStatus.Pending,
+                Priority = createToDoDto.Priority ?? ToDoPriority.Medium,
+                DueDate = createToDoDto.DueDate,
+                CreatedDate = DateTime.UtcNow,
+                LastModifiedDate = DateTime.UtcNow
+            };
+
+            await _toDoRepository.AddToDoAsync(todo);
+            await _toDoRepository.SaveChangesAsync();
+
+            return MapToDto(todo);
         }
         public async Task UpdateToDoAsync(Guid id, UpdateToDoDto updateToDoDto)
         {
-            throw new NotImplementedException();
+            var existingTodo = await _toDoRepository.GetToDoByIdAsync(id);
+
+            // TODO 7.4.3: due date validation
+
+            existingTodo.Title = updateToDoDto.Title;
+            existingTodo.Description = updateToDoDto.Description;
+            existingTodo.Status = updateToDoDto.Status;
+            existingTodo.Priority = updateToDoDto.Priority;
+            existingTodo.DueDate = updateToDoDto.DueDate;
+            existingTodo.LastModifiedDate = DateTime.UtcNow;
+
+            await _toDoRepository.UpdateToDoAsync(existingTodo);
+            await _toDoRepository.SaveChangesAsync();
+
         }
         public async Task DeleteToDoAsync(Guid id)
         {
-            throw new NotImplementedException();
+            var todo = await _toDoRepository.GetToDoByIdAsync(id);
+            await _toDoRepository.DeleteToDoAsync(todo);
+            await _toDoRepository.SaveChangesAsync();
         }
         public async Task<ToDoDto> MarkAsCompletedAsync(Guid id)
         {
-            throw new NotImplementedException();
+            await _toDoRepository.MarkAsCompletedToDoAsync(id);
+            await _toDoRepository.SaveChangesAsync();
+
+            var todo = await _toDoRepository.GetToDoByIdAsync(id);
+            return MapToDto(todo);
         }
         public async Task ReopenToDoAsync(Guid id)
         {
-            throw new NotImplementedException();
+            await _toDoRepository.ReopenToDoAsync(id);
+            await _toDoRepository.SaveChangesAsync();
         }
 
         private static ToDoDto MapToDto(ToDo todo)
