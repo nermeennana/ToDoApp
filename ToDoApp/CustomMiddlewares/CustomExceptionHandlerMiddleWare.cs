@@ -33,6 +33,25 @@ namespace ToDoApp.CustomMiddlewares
 
         private static async Task HandleExceptions(HttpContext httpContext, Exception ex)
         {
+            if (ex is FieldValidationException validationException)
+            {
+                httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+
+                var validationResponse = new ValidationErrorToReturn()
+                {
+                    ValidationErrors =
+                    [
+                        new ValidationError()
+                        {
+                            Field = validationException.Field,
+                            Errors = [validationException.Message]
+                        }
+                    ]
+                };
+
+                await httpContext.Response.WriteAsJsonAsync(validationResponse);
+                return;
+            }
             // Status coode 500 for internal server error
             httpContext.Response.StatusCode = ex switch
             {

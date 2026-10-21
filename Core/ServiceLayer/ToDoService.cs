@@ -1,5 +1,6 @@
 using System;
 using DomainLayer.Contracts___Repo_Interface;
+using DomainLayer.Exceptions;
 using DomainLayer.Models;
 using ServiceAbstractionLayer;
 using Shared.DataTransferObjects;
@@ -36,6 +37,9 @@ namespace ServiceLayer
         }
         public async Task<ToDoDto> CreateToDoAsync(CreateToDoDto createToDoDto)
         {
+            // Validate due date
+            EnsureDueDateIsValid(createToDoDto.DueDate);
+
             var todo = new ToDo
             {
                 Id = Guid.NewGuid(),
@@ -57,7 +61,8 @@ namespace ServiceLayer
         {
             var existingTodo = await _toDoRepository.GetToDoByIdAsync(id);
 
-            // TODO 7.4.3: due date validation
+            // Validate due date
+            EnsureDueDateIsValid(updateToDoDto.DueDate, existingTodo.DueDate);
 
             existingTodo.Title = updateToDoDto.Title;
             existingTodo.Description = updateToDoDto.Description;
@@ -114,6 +119,13 @@ namespace ServiceLayer
                 ModifiedAt = log.ModifiedAt,
                 UserName = log.UserName
             };
+        }
+        private static void EnsureDueDateIsValid(DateTime? dueDate,DateTime? currentDueDate = null)
+        {
+            if (dueDate.HasValue && dueDate.Value.Date < DateTime.UtcNow.Date && dueDate != currentDueDate)
+            {
+                throw new FieldValidationException("dueDate", "Due date cannot be in the past.");
+            }
         }
 
     }
