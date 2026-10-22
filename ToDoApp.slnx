@@ -8,6 +8,9 @@
     <Project Path="Infrastructure/perisistence/perisistence.csproj" />
     <Project Path="Infrastructure/Presentation/Presentation.csproj" />
   </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Tests/ServiceLayer.Tests/ServiceLayer.Tests.csproj" />
+  </Folder>
   <Project Path="Shared/Shared.csproj" />
   <Project Path="ToDoApp/ToDoApp.csproj" />
 </Solution>
