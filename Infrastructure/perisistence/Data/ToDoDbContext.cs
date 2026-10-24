@@ -5,9 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DomainLayer.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 namespace perisistence.Data
 {
-    public class ToDoDbContext : DbContext
+    public class ToDoDbContext : IdentityDbContext<AppUser>
     {
         public ToDoDbContext(DbContextOptions<ToDoDbContext> options) : base(options)
         {
