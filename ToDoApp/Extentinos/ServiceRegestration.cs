@@ -50,6 +50,7 @@ namespace ToDoApp.Extentinos
             });
             
             services.AddScoped<IToDoService, ToDoService>();
+            services.AddScoped<IAuthService, AuthService>();
 
             return services;
         }
