@@ -71,5 +71,28 @@ namespace ServiceLayer.Tests
             repositoryMock.Verify(r => r.GetToDoByIdAsync(id), Times.Once);
             repositoryMock.Verify(r => r.SaveChangesAsync(), Times.Once);
         }
+        [Fact]
+        public async Task UpdateToDoAsync_WithChangedPastDueDate_ThrowsFieldValidationException()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            var pastDate = DateTime.UtcNow.Date.AddDays(-5);
+            var existingTodo = new ToDo { Id = id, Title = "Old title", DueDate = pastDate };
+        
+            var repositoryMock = new Mock<IToDoRepository>();
+            repositoryMock
+                .Setup(r => r.GetToDoByIdAsync(id))
+                .ReturnsAsync(existingTodo);
+            var service = new ToDoService(repositoryMock.Object);
+        
+            var dto = new UpdateToDoDto
+            {
+                Title = "New title",
+                DueDate = DateTime.UtcNow.Date.AddDays(-1) // Changed to a different past date
+            };
+        
+            // Act + Assert
+            await Assert.ThrowsAsync<FieldValidationException>(() => service.UpdateToDoAsync(id, dto));
+        }
     }
 }
