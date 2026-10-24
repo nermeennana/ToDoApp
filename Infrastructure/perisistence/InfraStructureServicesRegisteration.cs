@@ -1,4 +1,5 @@
 ﻿using DomainLayer.Contracts___Repo_Interface;
+using DomainLayer.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,6 +24,17 @@ namespace perisistence
             services.AddScoped<IDataSeeding, DataSeeding>();
 
             services.AddScoped<IToDoRepository, ToDoRepository>();
+
+            services.AddIdentityCore<AppUser>(options =>
+            {
+                options.Password.RequireDigit = true;
+                options.Password.RequireLowercase = false;
+                options.Password.RequireUppercase = false;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequiredLength = 8;
+
+                options.User.RequireUniqueEmail = true;
+            }).AddEntityFrameworkStores<ToDoDbContext>();
 
             return services;
         }
