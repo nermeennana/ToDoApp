@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Activity Log</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Segoe UI", Tahoma, Arial, sans-serif;
+    background: #eef1f5;
+    margin: 0;
+    padding: 40px 16px;
+  }
+  .card {
+    max-width: 720px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    padding: 28px;
+  }
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .header h1 { font-size: 28px; margin: 0; color: #1a1a1a; }
+  .header-actions { display: flex; gap: 8px; }
+  .header a, .header button {
+    background: #1a1a1a;
+    color: #fff;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 12px;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .header a { background: #eee; color: #333; }
+
+  #errorBox {
+    display: none;
+    background: #fdecea;
+    color: #a32b23;
+    padding: 10px 14px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    font-size: 14px;
+  }
+
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th {
+    text-align: left;
+    color: #999;
+    font-weight: 600;
+    padding: 10px 8px;
+    border-bottom: 1px solid #eee;
+  }
+  td {
+    padding: 12px 8px;
+    border-bottom: 1px solid #f2f2f4;
+    color: #1a1a1a;
+    vertical-align: top;
+  }
+  td.time, td.user { color: #999; white-space: nowrap; }
+
+  .badge {
+    display: inline-block;
+    font-weight: 600;
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 8px;
+    background: #f2f2f4;
+    color: #555;
+    white-space: nowrap;
+  }
+  .badge.Created   { background: #e6f4ea; color: #1e7a3c; }
+  .badge.Updated   { background: #e7f3fb; color: #1d6fa5; }
+  .badge.Completed { background: #eeecfd; color: #5b4fe0; }
+  .badge.Reopened  { background: #fff4e0; color: #a76200; }
+  .badge.Deleted   { background: #fdecea; color: #a32b23; }
+
+  .empty { text-align: center; color: #aaa; padding: 30px; font-size: 14px; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="header">
+    <h1>Activity Log</h1>
+    <div class="header-actions">
+      <a href="todo-frontend.html">Back to tasks</a>
+      <button onclick="loadLogs()">Refresh</button>
+    </div>
+  </div>
+
+  <div id="errorBox"></div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Action</th>
+          <th>Task</th>
+          <th>User</th>
+          <th>Time</th>
+        </tr>
+      </thead>
+      <tbody id="logsBody"></tbody>
+    </table>
+  </div>
+  <div id="emptyState" class="empty" style="display: none;">No activity yet.</div>
+</div>
+
+<script>
+  const API_URL = "http://localhost:5093/api/ToDo/audit-logs";
+
+  function showError(msg) {
+    const box = document.getElementById("errorBox");
+    box.textContent = msg;
+    box.style.display = "block";
+  }
+
+  function escapeHtml(str) {
+    if (!str) return "";
+    return str.replace(/[&<>"']/g, c => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    }[c]));
+  }
+
+  function formatTime(value) {
+    const d = new Date(value + "Z");
+    return d.toLocaleString([], { dateStyle: "medium", timeStyle: "short" });
+  }
+
+  function renderLogs(logs) {
+    const body = document.getElementById("logsBody");
+    const empty = document.getElementById("emptyState");
+
+    empty.style.display = logs.length ? "none" : "block";
+
+    body.innerHTML = logs.map(log => `
+      <tr>
+        <td><span class="badge ${escapeHtml(log.action)}">${escapeHtml(log.action)}</span></td>
+        <td>${escapeHtml(log.toDoTitle)}</td>
+        <td class="user">${escapeHtml(log.userName)}</td>
+        <td class="time">${formatTime(log.modifiedAt)}</td>
+      </tr>
+    `).join("");
+  }
+
+  async function loadLogs() {
+    document.getElementById("errorBox").style.display = "none";
+    try {
+      const res = await fetch(API_URL);
+      if (res.status === 429) {
+        showError("You're going a bit too fast — please wait a few seconds and try again.");
+        return;
+      }
+      if (!res.ok) throw new Error("code " + res.status);
+      renderLogs(await res.json());
+    } catch (err) {
+      showError("Could not load the activity log: " + err.message + " — make sure the API is running.");
+    }
+  }
+
+  loadLogs();
+</script>
+</body>
+</html>
