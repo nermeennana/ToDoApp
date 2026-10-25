@@ -2,6 +2,7 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using DomainLayer.Exceptions;
 using DomainLayer.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
@@ -25,9 +26,35 @@ namespace ServiceLayer
             throw new NotImplementedException();
         }
 
-        public Task<AuthResponseDto> RegisterAsync(RegisterDto registerDto)
+        public async Task<AuthResponseDto> RegisterAsync(RegisterDto registerDto)
         {
-            throw new NotImplementedException();
+            // Check if the email is already registered
+            if(await _userManager.FindByEmailAsync(registerDto.Email) != null)
+            {
+                throw new FieldValidationException("email", "An account with this email already exists.");
+            }
+            
+            // Create a new user
+            var user = new AppUser
+            {
+                DisplayName = registerDto.DisplayName,
+                Email = registerDto.Email,
+                UserName = registerDto.Email
+            }; 
+            
+            // Check the password requirements and create the user with the provided password
+            var result = await _userManager.CreateAsync(user, registerDto.Password);
+            
+            // If the password does not meet the requirements, throw a FieldValidationException with the error messages that shows the password requirements
+            if(!result.Succeeded)
+            {
+                var errors = string.Join(" ", result.Errors.Select(e => e.Description));
+                throw new FieldValidationException("password", errors);
+            }
+            
+            var token = CreateToken(user);
+            return new AuthResponseDto {DisplayName = user.DisplayName , Email = user.Email, Token = token };
+
         }
         private string CreateToken(AppUser user)
         {
