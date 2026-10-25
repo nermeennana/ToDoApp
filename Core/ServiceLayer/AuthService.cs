@@ -21,9 +21,19 @@ namespace ServiceLayer
             _userManager = userManager;
             _configuration = configuration;
         }
-        public Task<AuthResponseDto> LoginAsync(LoginDto loginDto)
+        public async Task<AuthResponseDto> LoginAsync(LoginDto loginDto)
         {
-            throw new NotImplementedException();
+            var user = await _userManager.FindByEmailAsync(loginDto.Email);
+            if (user == null || !await _userManager.CheckPasswordAsync(user, loginDto.Password))
+            {
+                throw new UnauthorizedException();
+            }
+            return new AuthResponseDto
+            {
+                DisplayName = user.DisplayName,
+                Email = user.Email,
+                Token = CreateToken(user)
+            };
         }
 
         public async Task<AuthResponseDto> RegisterAsync(RegisterDto registerDto)
@@ -52,6 +62,7 @@ namespace ServiceLayer
                 throw new FieldValidationException("password", errors);
             }
             
+            // Generate a JWT token for the newly registered user
             var token = CreateToken(user);
             return new AuthResponseDto {DisplayName = user.DisplayName , Email = user.Email, Token = token };
 
