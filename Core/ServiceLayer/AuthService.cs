@@ -31,7 +31,7 @@ namespace ServiceLayer
             return new AuthResponseDto
             {
                 DisplayName = user.DisplayName,
-                Email = user.Email,
+                Email = user.Email!,
                 Token = CreateToken(user)
             };
         }
@@ -64,7 +64,12 @@ namespace ServiceLayer
             
             // Generate a JWT token for the newly registered user
             var token = CreateToken(user);
-            return new AuthResponseDto {DisplayName = user.DisplayName , Email = user.Email, Token = token };
+            return new AuthResponseDto
+            {
+                DisplayName = user.DisplayName ,
+                Email = user.Email,
+                Token = token 
+            };
 
         }
         private string CreateToken(AppUser user)
