@@ -13,6 +13,8 @@ using ToDoApp.Factories;
 using System.Threading.RateLimiting;
 using ToDoApp.Background_Services;
 using ToDoApp.CustomMiddlewares;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 namespace ToDoApp
 {
@@ -28,6 +30,7 @@ namespace ToDoApp
             builder.Services.AddSwaggerServices();
             builder.Services.AddInfrastructureServices(builder.Configuration);
             builder.Services.AddWebApplicationServices();
+            builder.Services.AddJwtAuthentication(builder.Configuration);
             builder.Services.AddSignalR();
             builder.Services.AddRateLimiter(options =>
             {
@@ -82,6 +85,7 @@ namespace ToDoApp
             }
 
             app.UseHttpsRedirection();
+            app.UseAuthentication();
             app.UseAuthorization();
             app.MapControllers(); 
             #endregion

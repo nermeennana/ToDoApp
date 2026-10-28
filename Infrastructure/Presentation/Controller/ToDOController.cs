@@ -10,10 +10,12 @@ using System.Text;
 using System.Threading.Tasks;
 using ServiceAbstractionLayer;
 using Shared.DataTransferObjects;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Presentation.Controller
 {
     [ApiController]
+    [Authorize]
     [Route("api/[controller]")]
     [EnableRateLimiting("ToDoPolicy")]
     public class ToDOController : ControllerBase

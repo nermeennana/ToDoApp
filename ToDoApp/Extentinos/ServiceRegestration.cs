@@ -1,13 +1,15 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using ServiceAbstractionLayer;
 using ServiceLayer;
+using System.Text;
 using System.Text.Json.Serialization;
 using ToDoApp.Factories;
 
 namespace ToDoApp.Extentinos
 {
     public static class ServiceRegestration
-    
     {
         public static IServiceCollection AddSwaggerServices(this IServiceCollection services)
         {
@@ -54,5 +56,27 @@ namespace ToDoApp.Extentinos
 
             return services;
         }
+    
+        public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidIssuer = configuration["Jwt:Issuer"],
+
+                        ValidateAudience = true,
+                        ValidAudience = configuration["Jwt:Audience"],
+
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]!))
+                    };
+                });
+            return services;
+            }
     }
 }
