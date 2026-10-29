@@ -406,6 +406,12 @@
     const d = new Date(createdDate + "Z");
     return "Added " + d.toLocaleString([], { dateStyle: "medium", timeStyle: "short" });
   }
+
+  function formatCompletedLabel(completedAt) {
+    if (!completedAt) return "";
+    const d = new Date(completedAt + "Z");
+    return "Completed " + d.toLocaleString([], { dateStyle: "medium", timeStyle: "short" });
+  }
   
   async function loadTodos() {
     try {
@@ -473,7 +479,8 @@
             ? renderEditForm(t)
             : `<div class="todo-title ${isDone ? "done" : ""}">${escapeHtml(t.title)}</div>
                <div class="todo-sub ${isDone ? "done" : ""}">${dueLabel ? `Due ${dueLabel}` : ""}</div>
-               <div class="todo-sub ${isDone ? "done" : ""}">${formatCreatedLabel(t.createdDate)}</div>`}
+               <div class="todo-sub ${isDone ? "done" : ""}">${formatCreatedLabel(t.createdDate)}</div>
+               ${isDone && t.completedAt ? `<div class="todo-sub done">${formatCompletedLabel(t.completedAt)}</div>` : ""}`}
         </div>
         <div class="tags">
           <span class="tag ${isDone ? "done" : ""}">${t.priority}</span>
