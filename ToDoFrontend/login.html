@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign In</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Segoe UI", Tahoma, Arial, sans-serif;
+    background: #eef1f5;
+    margin: 0;
+    padding: 60px 16px;
+  }
+  .card {
+    max-width: 400px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    padding: 28px;
+  }
+  h1 { font-size: 26px; margin: 0 0 6px; color: #1a1a1a; }
+  .subtitle { color: #999; font-size: 14px; margin: 0 0 22px; }
+
+  label { display: block; font-size: 13px; font-weight: 600; color: #555; margin-bottom: 6px; }
+  input {
+    width: 100%;
+    padding: 11px 12px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    font-size: 14px;
+    margin-bottom: 14px;
+  }
+  .hint { font-size: 12px; color: #999; margin: -8px 0 14px; }
+
+  .submit {
+    width: 100%;
+    background: #1a1a1a;
+    color: #fff;
+    border: none;
+    padding: 12px;
+    border-radius: 12px;
+    font-size: 15px;
+    cursor: pointer;
+  }
+  .submit:disabled { background: #888; cursor: default; }
+
+  .switch { text-align: center; font-size: 14px; color: #777; margin-top: 18px; }
+  .switch a { color: #1a1a1a; font-weight: 600; cursor: pointer; text-decoration: underline; }
+
+  #errorBox {
+    display: none;
+    background: #fdecea;
+    color: #a32b23;
+    padding: 10px 14px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    font-size: 14px;
+  }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <h1 id="formTitle">Welcome back</h1>
+  <p class="subtitle" id="formSubtitle">Sign in to see your tasks.</p>
+
+  <div id="errorBox"></div>
+
+  <form id="authForm">
+    <div id="nameField" class="hidden">
+      <label for="displayName">Name</label>
+      <input type="text" id="displayName" autocomplete="name">
+    </div>
+
+    <label for="email">Email</label>
+    <input type="email" id="email" autocomplete="email" required>
+
+    <label for="password">Password</label>
+    <input type="password" id="password" autocomplete="current-password" required>
+    <p class="hint hidden" id="passwordHint">At least 8 characters, including a number.</p>
+
+    <button type="submit" class="submit" id="submitBtn">Sign in</button>
+  </form>
+
+  <p class="switch">
+    <span id="switchText">Don't have an account?</span>
+    <a id="switchLink">Create one</a>
+  </p>
+</div>
+
+<script>
+  const AUTH_API = "http://localhost:5093/api/Auth";
+  let isRegister = false;
+
+  function showError(msg) {
+    const box = document.getElementById("errorBox");
+    box.textContent = msg;
+    box.style.display = "block";
+  }
+
+  function hideError() {
+    document.getElementById("errorBox").style.display = "none";
+  }
+
+  function setMode(register) {
+    isRegister = register;
+    hideError();
+    document.getElementById("formTitle").textContent = register ? "Create account" : "Welcome back";
+    document.getElementById("formSubtitle").textContent = register ? "Start organizing your tasks." : "Sign in to see your tasks.";
+    document.getElementById("submitBtn").textContent = register ? "Create account" : "Sign in";
+    document.getElementById("switchText").textContent = register ? "Already have an account?" : "Don't have an account?";
+    document.getElementById("switchLink").textContent = register ? "Sign in" : "Create one";
+    document.getElementById("nameField").classList.toggle("hidden", !register);
+    document.getElementById("passwordHint").classList.toggle("hidden", !register);
+    document.getElementById("password").autocomplete = register ? "new-password" : "current-password";
+  }
+
+  document.getElementById("switchLink").addEventListener("click", () => setMode(!isRegister));
+
+  // Turns the API's error JSON into one readable message
+  function readError(data, status) {
+    if (data && data.validationErrors && data.validationErrors.length) {
+      return data.validationErrors.flatMap(e => e.errors).join(" ");
+    }
+    if (data && data.errorMessage) return data.errorMessage;
+    if (status === 429) return "Too many attempts — please wait a few seconds and try again.";
+    return "Something went wrong (code " + status + ").";
+  }
+
+  document.getElementById("authForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    hideError();
+
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+    const displayName = document.getElementById("displayName").value.trim();
+
+    if (isRegister && !displayName) {
+      showError("Name is required.");
+      return;
+    }
+
+    const body = isRegister ? { displayName, email, password } : { email, password };
+    const submitBtn = document.getElementById("submitBtn");
+    submitBtn.disabled = true;
+
+    try {
+      const res = await fetch(`${AUTH_API}/${isRegister ? "register" : "login"}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok) {
+        showError(readError(data, res.status));
+        return;
+      }
+
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("displayName", data.displayName);
+      window.location.href = "todo-frontend.html";
+    } catch (err) {
+      showError("Could not reach the API — make sure it's running.");
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>
