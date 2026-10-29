@@ -54,6 +54,9 @@ namespace ToDoApp.Extentinos
             services.AddScoped<IToDoService, ToDoService>();
             services.AddScoped<IAuthService, AuthService>();
 
+            services.AddHttpContextAccessor();
+            services.AddScoped<ICurrentUserService, CurrentUserService>();
+
             return services;
         }
     

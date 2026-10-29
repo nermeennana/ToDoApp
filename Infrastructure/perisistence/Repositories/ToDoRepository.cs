@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
+using ServiceAbstractionLayer;
 
 namespace perisistence.Repositories
 {
@@ -18,12 +19,13 @@ namespace perisistence.Repositories
         private readonly ToDoDbContext _todoDbContext;
         private const string CacheKey = "ToDosKey";
         private readonly IMemoryCache _memoryCache;
-        private const string DefaultUserName = "System";
+        private readonly ICurrentUserService _currentUserService;
 
-        public ToDoRepository(ToDoDbContext todoDbContext, IMemoryCache memoryCache)
+        public ToDoRepository(ToDoDbContext todoDbContext, IMemoryCache memoryCache, ICurrentUserService currentUserService)
         {
             _todoDbContext = todoDbContext;
             _memoryCache = memoryCache;
+            _currentUserService = currentUserService;
         }
         public async Task<IEnumerable<AuditLog>> GetAuditLogsAsync()
             => await _todoDbContext.AuditLogs.AsNoTracking().OrderByDescending(a => a.ModifiedAt).ToListAsync();
@@ -134,7 +136,7 @@ namespace perisistence.Repositories
                 ToDoTitle = todo.Title,
                 Action = action,
                 ModifiedAt = DateTime.UtcNow,
-                UserName = DefaultUserName
+                UserName = _currentUserService.UserName
             });
         }
         public async Task SaveChangesAsync()
