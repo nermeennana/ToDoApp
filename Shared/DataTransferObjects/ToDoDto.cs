@@ -13,5 +13,6 @@ namespace Shared.DataTransferObjects
         public DateTime? DueDate { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime LastModifiedDate { get; set; }
+        public DateTime? CompletedAt { get; set; }
     }
 }

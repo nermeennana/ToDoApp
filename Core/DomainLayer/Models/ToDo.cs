@@ -22,5 +22,6 @@ namespace DomainLayer.Models
         public DateTime? DueDate { get; set; }
         public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
         public DateTime LastModifiedDate { get; set; }
+        public DateTime? CompletedAt { get; set; }
     }
 }
