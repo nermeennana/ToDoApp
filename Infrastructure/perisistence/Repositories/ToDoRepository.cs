@@ -109,6 +109,7 @@ namespace perisistence.Repositories
             }
 
             todo.Status = ToDoStatus.Completed;
+            todo.CompletedAt = DateTime.UtcNow;
             todo.LastModifiedDate = DateTime.UtcNow;
             LogAudit(todo, "Completed");
         }
@@ -123,6 +124,7 @@ namespace perisistence.Repositories
 
             // Set to enum default (value 0). Replace with a specific member like ToDoStatus.Pending if you prefer.
             todo.Status = default;
+            todo.CompletedAt = null;
             todo.LastModifiedDate = DateTime.UtcNow;
 
             LogAudit(todo, "Reopened");

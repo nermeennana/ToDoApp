@@ -106,7 +106,8 @@ namespace ServiceLayer
                 Priority = todo.Priority,
                 DueDate = todo.DueDate,
                 CreatedDate = todo.CreatedDate,
-                LastModifiedDate = todo.LastModifiedDate
+                LastModifiedDate = todo.LastModifiedDate,
+                CompletedAt = todo.CompletedAt
             };
         }
         private static AuditLogDto MapToAuditLogDto(AuditLog log)
